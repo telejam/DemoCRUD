@@ -1,0 +1,61 @@
+﻿@page "/movimientos"
+@using Empresa.Application.Dtos
+@using Empresa.Web.Services
+@inject MovimientoApiService Api
+@inject NavigationManager Nav
+
+<h3>Movimientos</h3>
+<button class="btn btn-primary mb-3" @onclick='() => Nav.NavigateTo("/movimientos/nuevo")'>Nuevo Movimiento</button>
+
+@if (movimientos == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (!movimientos.Any())
+{
+    <p class="text-gray-500 italic">No hay movimientos registrados.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Asunto</th>
+                <th>Estado</th>
+                <th>Ubicación</th>
+                <th>Operarios</th>
+                <th>Equipos</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in movimientos)
+            {
+                <tr>
+                    <td>@m.Fecha.ToShortDateString()</td>
+                    <td>@m.ClienteNombre</td>
+                    <td>@m.Asunto</td>
+                    <td>@m.EstadoNombre</td>
+                    <td>@m.Ubicacion</td>
+                    <td>@m.CantOperarios</td>
+                    <td>@m.CantEquipos</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" @onclick='() => Nav.NavigateTo($"/movimientos/editar/{m.Id}")'>Editar</button>
+                        <button class="btn btn-sm btn-danger" @onclick='() => Nav.NavigateTo($"/movimientos/eliminar/{m.Id}")'>Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<MovimientoDto>? movimientos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        movimientos = await Api.GetAll();
+    }
+}

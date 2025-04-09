@@ -1,0 +1,47 @@
+﻿@page "/clientes/nuevo"
+@page "/clientes/editar/{Id:int}"
+@using Empresa.Application.Dtos
+@using Empresa.Web.Services
+@inject ClienteApiService Api
+@inject NavigationManager Nav
+
+<h3>@(Id == null ? "Nuevo Cliente" : "Editar Cliente")</h3>
+
+<EditForm Model="cliente" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-2">
+        <label>Nombre:</label>
+        <InputText class="form-control" @bind-Value="cliente.Nombre" />
+    </div>
+
+    <div class="d-flex gap-2">
+        <button class="btn btn-success" type="submit">Guardar</button>
+        <button class="btn btn-secondary" @onclick='() => Nav.NavigateTo("/clientes")'>Cancelar</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    ClienteDto cliente = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var c = await Api.GetById(Id.Value);
+            if (c != null) cliente = c;
+        }
+    }
+
+    async Task Guardar()
+    {
+        bool result = Id == null
+            ? await Api.Create(cliente)
+            : await Api.Update(Id.Value, cliente);
+
+        if (result)
+            Nav.NavigateTo("/clientes");
+    }
+}

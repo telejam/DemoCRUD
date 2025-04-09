@@ -1,0 +1,47 @@
+﻿@page "/operarios/nuevo"
+@page "/operarios/editar/{Id:int}"
+@using Empresa.Application.Dtos
+@using Empresa.Web.Services
+@inject OperarioApiService Api
+@inject NavigationManager Nav
+
+<h3>@(Id == null ? "Nuevo Operario" : "Editar Operario")</h3>
+
+<EditForm Model="operario" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-2">
+        <label>Nombre:</label>
+        <InputText class="form-control" @bind-Value="operario.Nombre" />
+    </div>
+
+    <div class="d-flex gap-2">
+        <button class="btn btn-success" type="submit">Guardar</button>
+        <button class="btn btn-secondary" @onclick='() => Nav.NavigateTo("/operarios")'>Cancelar</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    OperarioDto operario = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var o = await Api.GetById(Id.Value);
+            if (o != null) operario = o;
+        }
+    }
+
+    async Task Guardar()
+    {
+        bool result = Id == null
+            ? await Api.Create(operario)
+            : await Api.Update(Id.Value, operario);
+
+        if (result)
+            Nav.NavigateTo("/operarios");
+    }
+}

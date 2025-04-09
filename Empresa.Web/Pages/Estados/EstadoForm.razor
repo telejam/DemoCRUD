@@ -1,0 +1,47 @@
+﻿@page "/estados/nuevo"
+@page "/estados/editar/{Id:int}"
+@using Empresa.Application.Dtos
+@using Empresa.Web.Services
+@inject EstadoApiService Api
+@inject NavigationManager Nav
+
+<h3>@(Id == null ? "Nuevo Estado" : "Editar Estado")</h3>
+
+<EditForm Model="estado" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-2">
+        <label>Nombre:</label>
+        <InputText class="form-control" @bind-Value="estado.Nombre" />
+    </div>
+
+    <div class="d-flex gap-2">
+        <button class="btn btn-success" type="submit">Guardar</button>
+        <button class="btn btn-secondary" @onclick='() => Nav.NavigateTo("/estados")'>Cancelar</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    EstadoDto estado = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var e = await Api.GetById(Id.Value);
+            if (e != null) estado = e;
+        }
+    }
+
+    async Task Guardar()
+    {
+        bool result = Id == null
+            ? await Api.Create(estado)
+            : await Api.Update(Id.Value, estado);
+
+        if (result)
+            Nav.NavigateTo("/estados");
+    }
+}

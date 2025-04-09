@@ -1,0 +1,57 @@
+﻿@page "/clientes"
+@using Empresa.Application.Dtos
+@using Empresa.Web.Services
+@inject ClienteApiService Api
+@inject NavigationManager Nav
+
+<h3>Clientes</h3>
+<button class="btn btn-primary mb-3" @onclick='() => Nav.NavigateTo("/clientes/nuevo")'>Nuevo Cliente</button>
+
+@if (clientes == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (!clientes.Any())
+{
+    <p class="text-gray-500 italic">No hay clientes registrados.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in clientes)
+            {
+                <tr>
+                    <td>@c.Nombre</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" @onclick='() => Nav.NavigateTo($"/clientes/editar/{c.Id}")'>Editar</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => Eliminar(c.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<ClienteDto>? clientes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        clientes = await Api.GetAll();
+    }
+
+    async Task Eliminar(int id)
+    {
+        if (await Api.Delete(id))
+        {
+            clientes = await Api.GetAll(); 
+        }
+    }
+}

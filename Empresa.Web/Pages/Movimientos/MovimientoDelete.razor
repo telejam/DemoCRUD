@@ -1,0 +1,39 @@
+﻿@page "/movimientos/eliminar/{Id:int}"
+@using Empresa.Application.Dtos
+@using Empresa.Web.Services
+@inject MovimientoApiService Api
+@inject NavigationManager Nav
+
+<h3>¿Eliminar Movimiento?</h3>
+
+@if (movimiento == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <div class="alert alert-danger">
+        <p>Asunto: <strong>@movimiento.Asunto</strong></p>
+        <p>Ubicación: @movimiento.Ubicacion</p>
+        <p>Fecha: @movimiento.Fecha.ToShortDateString()</p>
+
+        <button class="btn btn-danger" @onclick="Eliminar">Eliminar</button>
+        <button class="btn btn-secondary ms-2" @onclick='() => Nav.NavigateTo("/movimientos")'>Cancelar</button>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    MovimientoDto? movimiento;
+
+    protected override async Task OnInitializedAsync()
+    {
+        movimiento = await Api.GetById(Id);
+    }
+
+    async Task Eliminar()
+    {
+        await Api.Delete(Id);
+        Nav.NavigateTo("/movimientos");
+    }
+}

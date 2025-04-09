@@ -1,0 +1,57 @@
+﻿@page "/operarios"
+@using Empresa.Application.Dtos
+@using Empresa.Web.Services
+@inject OperarioApiService Api
+@inject NavigationManager Nav
+
+<h3>Operarios</h3>
+<button class="btn btn-primary mb-3" @onclick='() => Nav.NavigateTo("/operarios/nuevo")'>Nuevo Operario</button>
+
+@if (operarios == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (!operarios.Any())
+{
+    <p class="text-gray-500 italic">No hay operarios registrados.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var o in operarios)
+            {
+                <tr>
+                    <td>@o.Nombre</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" @onclick='() => Nav.NavigateTo($"/operarios/editar/{o.Id}")'>Editar</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => Eliminar(o.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<OperarioDto>? operarios;
+
+    protected override async Task OnInitializedAsync()
+    {
+        operarios = await Api.GetAll();
+    }
+
+    async Task Eliminar(int id)
+    {
+        if (await Api.Delete(id))
+        {
+            operarios = await Api.GetAll(); 
+        }
+    }
+}
