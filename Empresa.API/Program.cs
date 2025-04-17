@@ -1,3 +1,5 @@
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Empresa.Application.Interfaces;
 using Empresa.Application.Services;
 using Empresa.Infrastructure.Context;
@@ -11,8 +13,16 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<EmpresaDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString")));
+// Local Secret
+//var connectionString = builder.Configuration.GetConnectionString("ConnectionString");
+
+// Azure Key Vault Secret
+var keyVaultURL = new Uri(builder.Configuration["KeyVaultURL"]);
+var secretClient = new SecretClient(keyVaultURL, new DefaultAzureCredential());
+KeyVaultSecret keyVaultSecret = secretClient.GetSecret("ConnectionString");
+var connectionString = keyVaultSecret.Value;
+
+builder.Services.AddDbContext<EmpresaDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IMovimientoService, MovimientoService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IEstadoService, EstadoService>();
